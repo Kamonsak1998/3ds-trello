@@ -1,0 +1,37 @@
+version: '3.1'
+services:
+
+  3ds-trello-web:
+    container_name: 3ds-trello-web
+    ports:
+      - 8081:8080
+    restart: always
+    build:
+      context: ./3ds-trello-web
+      dockerfile: DockerFile
+
+  3ds-trello-api:
+    container_name: 3ds-trello-api
+    build:
+      context: ./3ds-trello-api
+      dockerfile: Dockerfile
+      args:
+        APP_ENV: ${APP_ENV}
+    ports:
+      - 9000:9000
+
+  mariadb:
+    image: mariadb:10
+    container_name: 3ds-trello-mariadb
+    hostname: mariadb
+    restart: always
+    volumes:
+      - ../mariadb:/var/lib/mysql
+      - ./3ds-trello-api/migrations:/docker-entrypoint-initdb.d
+    ports:
+      - 3306:3306
+    environment:
+      - TZ=Asia/Bangkok
+      - MYSQL_ROOT_PASSWORD=p@ssWoRD
+    command:
+      mysqld --innodb-flush-method=littlesync --innodb-use-native-aio=OFF --log_bin=ON
